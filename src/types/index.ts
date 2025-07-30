@@ -1,11 +1,7 @@
-export interface LiveScore {
+// src/types/index.ts
+
+export interface NewsArticle {
   id: string;
-  name: string;
-  status: string;
-  teamA: string;
-  teamB: string;
-  scoreA: string;
-  scoreB: string;
-  oversA: string;
-  oversB: string;
+  title: string;
+  content: string;
 }

@@ -1,12 +1,10 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
-import { NewsArticle } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
-export function AdminPanel() {
+export default function AdminPanel() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -17,13 +15,11 @@ export function AdminPanel() {
   const fetchArticles = async () => {
     try {
       const res = await fetch('/api/articles');
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setArticles(data.articles);
     } catch (err) {
-      console.error("Failed to fetch articles:", err);
+      console.error("Fetch error:", err);
       setError("Failed to load articles.");
     } finally {
       setLoading(false);
@@ -39,31 +35,22 @@ export function AdminPanel() {
     if (!title || !content) return;
 
     try {
-      let res;
-      if (editingArticleId) {
-        res = await fetch(`/api/articles/${editingArticleId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, content }),
-        });
-      } else {
-        res = await fetch('/api/articles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, content }),
-        });
-      }
+      const url = editingArticleId ? `/api/articles/${editingArticleId}` : '/api/articles';
+      const method = editingArticleId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content }),
+      });
 
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       setTitle('');
       setContent('');
       setEditingArticleId(null);
-      fetchArticles(); // Refresh the list of articles
+      fetchArticles();
     } catch (err) {
-      console.error("Failed to save article:", err);
+      console.error("Save error:", err);
       setError("Failed to save article.");
     }
   };
@@ -76,27 +63,17 @@ export function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/articles/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      fetchArticles(); // Refresh the list of articles
+      const res = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      fetchArticles();
     } catch (err) {
-      console.error("Failed to delete article:", err);
+      console.error("Delete error:", err);
       setError("Failed to delete article.");
     }
   };
 
-  if (loading) {
-    return <p className="text-xl">Loading admin panel...</p>;
-  }
-
-  if (error) {
-    return <p className="text-xl text-red-500">Error: {error}</p>;
-  }
+  if (loading) return <p className="text-xl">Loading admin panel...</p>;
+  if (error) return <p className="text-xl text-red-500">Error: {error}</p>;
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -111,9 +88,9 @@ export function AdminPanel() {
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
               <input
-                type="text"
                 id="title"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                type="text"
+                className="mt-1 block w-full border p-2 rounded-md shadow-sm"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -124,24 +101,30 @@ export function AdminPanel() {
               <textarea
                 id="content"
                 rows={5}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                className="mt-1 block w-full border p-2 rounded-md shadow-sm"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
               ></textarea>
             </div>
-            <Button type="submit">
-              {editingArticleId ? 'Update Article' : 'Add Article'}
-            </Button>
-            {editingArticleId && (
-              <Button type="button" variant="outline" onClick={() => {
-                setEditingArticleId(null);
-                setTitle('');
-                setContent('');
-              }} className="ml-2">
-                Cancel Edit
+            <div className="flex gap-2">
+              <Button type="submit">
+                {editingArticleId ? 'Update Article' : 'Add Article'}
               </Button>
-            )}
+              {editingArticleId && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingArticleId(null);
+                    setTitle('');
+                    setContent('');
+                  }}
+                >
+                  Cancel Edit
+                </Button>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -154,15 +137,11 @@ export function AdminPanel() {
               <CardHeader>
                 <CardTitle>{article.title}</CardTitle>
               </CardHeader>
-              <CardContent className="flex justify-between items-center">
-                <p className="text-sm text-gray-600 line-clamp-2">{article.content}</p>
-                <div className="flex space-x-2 ml-4">
-                  <Button variant="secondary" onClick={() => handleEdit(article)}>
-                    Edit
-                  </Button>
-                  <Button variant="destructive" onClick={() => handleDelete(article.id)}>
-                    Delete
-                  </Button>
+              <CardContent className="flex justify-between items-start">
+                <p className="text-sm text-gray-600 max-w-[70%] line-clamp-3">{article.content}</p>
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={() => handleEdit(article)}>Edit</Button>
+                  <Button variant="destructive" onClick={() => handleDelete(article.id)}>Delete</Button>
                 </div>
               </CardContent>
             </Card>
