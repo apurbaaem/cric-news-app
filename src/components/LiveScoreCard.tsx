@@ -1,24 +1,26 @@
 import { LiveScore } from '@/types';
 
+
 export function LiveScoreCard({ score }: { score: LiveScore }) {
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5 hover:shadow-xl transition-all">
-      <h3 className="text-xl font-semibold text-center text-indigo-700 mb-4">
-        {score.name}
-      </h3>
-      <div className="space-y-3 text-gray-700">
-        <div className="flex justify-between">
-          <span>{score.teamA}</span>
-          <span>{score.scoreA} {score.oversA && `(${score.oversA})`}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>{score.teamB}</span>
-          <span>{score.scoreB} {score.oversB && `(${score.oversB})`}</span>
-        </div>
+    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5 space-y-3">
+      {/* Match Title */}
+      <h2 className="text-lg font-bold text-indigo-800 text-center">{score.name}</h2>
+
+      {/* Team A */}
+      <div className="flex justify-between text-gray-700">
+        <span className="font-medium">{score.teamA}</span>
+        <span>{score.scoreA} {score.oversA && `(${score.oversA})`}</span>
       </div>
-      <p className="text-sm text-green-600 text-center mt-4 font-medium">
-        {score.status || 'Match in progress'}
-      </p>
+
+      {/* Team B */}
+      <div className="flex justify-between text-gray-700">
+        <span className="font-medium">{score.teamB}</span>
+        <span>{score.scoreB} {score.oversB && `(${score.oversB})`}</span>
+      </div>
+
+      {/* Status */}
+      <p className="text-center text-green-600 font-medium">{score.status}</p>
     </div>
   );
 }
