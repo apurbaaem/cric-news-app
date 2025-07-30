@@ -4,8 +4,14 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
+type Article = {
+  id: string;
+  title: string;
+  content: string;
+};
+
 export default function AdminPanel() {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
@@ -55,7 +61,7 @@ export default function AdminPanel() {
     }
   };
 
-  const handleEdit = (article: NewsArticle) => {
+  const handleEdit = (article: Article) => {
     setTitle(article.title);
     setContent(article.content);
     setEditingArticleId(article.id);
