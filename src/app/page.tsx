@@ -1,92 +1,47 @@
+// /app/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { LiveScore, NewsArticle } from '@/types';
-import { LiveScoreCard } from '@/components/features/home/LiveScoreCard';
-import { NewsArticleCard } from '@/components/features/home/NewsArticleCard';
+import { LiveScore } from '@/types';
+import { LiveScoreCard } from '@/components/LiveScoreCard';
 
-export default function Home() {
-  const [liveScores, setLiveScores] = useState<LiveScore[]>([]);
-  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+export default function HomePage() {
+  const [scores, setScores] = useState<LiveScore[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchScores() {
       try {
-        const [scoresRes, articlesRes] = await Promise.all([
-          fetch('/api/cricket/live-scores'),
-          fetch('/api/articles'),
-        ]);
-
-        if (!scoresRes.ok) {
-          throw new Error(`HTTP error! status: ${scoresRes.status} for live scores`);
-        }
-        if (!articlesRes.ok) {
-          throw new Error(`HTTP error! status: ${articlesRes.status} for news articles`);
-        }
-
-        const scoresData = await scoresRes.json();
-        const articlesData = await articlesRes.json();
-
-        setLiveScores(scoresData.scores);
-        setNewsArticles(articlesData.articles);
+        const res = await fetch('/api/live-scores');
+        const data = await res.json();
+        setScores(data.scores);
       } catch (err) {
-        console.error("Failed to fetch data:", err);
-        setError("Failed to load data. Please try again later.");
+        console.error('Failed to load scores:', err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
+    fetchScores();
   }, []);
 
-  if (loading) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <p className="text-xl">Loading latest news and scores...</p>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <p className="text-xl text-red-500">Error: {error}</p>
-      </main>
-    );
-  }
-
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 md:p-24 bg-gray-100">
-      <h1 className="text-5xl font-extrabold text-gray-900 mb-12 text-center">CricNews</h1>
+    <main className="min-h-screen bg-gray-50 py-10 px-6">
+      <h1 className="text-4xl font-bold text-center text-indigo-700 mb-10">
+        🏏 CricLive — Live Cricket Scores
+      </h1>
 
-      <section className="w-full max-w-6xl mb-16">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">Live Scores</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {liveScores.length > 0 ? (
-            liveScores.map((score) => (
-              <LiveScoreCard key={score.id} score={score} />
-            ))
-          ) : (
-            <p className="text-gray-600">No live scores available at the moment.</p>
-          )}
+      {loading ? (
+        <p className="text-center text-gray-500">Loading live scores...</p>
+      ) : scores.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {scores.map((score) => (
+            <LiveScoreCard key={score.id} score={score} />
+          ))}
         </div>
-      </section>
-
-      <section className="w-full max-w-6xl">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">Latest News</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {newsArticles.length > 0 ? (
-            newsArticles.map((article) => (
-              <NewsArticleCard key={article.id} article={article} />
-            ))
-          ) : (
-            <p className="text-gray-600">No news articles available at the moment.</p>
-          )}
-        </div>
-      </section>
+      ) : (
+        <p className="text-center text-gray-500">No matches live right now.</p>
+      )}
     </main>
   );
 }

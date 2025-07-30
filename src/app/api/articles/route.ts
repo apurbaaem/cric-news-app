@@ -1,18 +1,29 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
 
 export async function GET() {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'test')); // Replace 'test' with your collection name if needed
-    const articles = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+  const apiKey = '636cc663-b0a1-4196-bcf5-8f675df5dbd0';
+  const url = `https://api.cricapi.com/v1/currentMatches?apikey=${apiKey}&offset=0`;
 
-    return NextResponse.json({ articles }, { status: 200 });
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`API request failed: ${res.statusText}`);
+
+    const data = await res.json();
+
+    const matches = data.data?.map((match: any) => ({
+      id: match.id,
+      name: match.name,
+      status: match.status,
+      team1: match.teamInfo?.[0]?.name,
+      team2: match.teamInfo?.[1]?.name,
+      score1: match.score?.[0]?.r || '',
+      score2: match.score?.[1]?.r || '',
+    })) || [];
+
+    return NextResponse.json({ scores: matches }, { status: 200 });
+
   } catch (error) {
-    console.error('Error fetching articles:', error);
-    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
+    console.error('Error fetching live scores:', error);
+    return NextResponse.json({ error: 'Failed to fetch live scores' }, { status: 500 });
   }
 }
