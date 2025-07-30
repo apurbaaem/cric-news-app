@@ -25,7 +25,6 @@ export default function AdminPanel() {
       const data = await res.json();
       setArticles(data.articles);
     } catch (err) {
-      console.error("Fetch error:", err);
       setError("Failed to load articles.");
     } finally {
       setLoading(false);
@@ -43,6 +42,7 @@ export default function AdminPanel() {
     try {
       const url = editingArticleId ? `/api/articles/${editingArticleId}` : '/api/articles';
       const method = editingArticleId ? 'PUT' : 'POST';
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -56,7 +56,6 @@ export default function AdminPanel() {
       setEditingArticleId(null);
       fetchArticles();
     } catch (err) {
-      console.error("Save error:", err);
       setError("Failed to save article.");
     }
   };
@@ -73,7 +72,6 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       fetchArticles();
     } catch (err) {
-      console.error("Delete error:", err);
       setError("Failed to delete article.");
     }
   };
@@ -96,7 +94,7 @@ export default function AdminPanel() {
               <input
                 id="title"
                 type="text"
-                className="mt-1 block w-full border p-2 rounded-md shadow-sm"
+                className="mt-1 block w-full border p-2 rounded-md"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -107,11 +105,11 @@ export default function AdminPanel() {
               <textarea
                 id="content"
                 rows={5}
-                className="mt-1 block w-full border p-2 rounded-md shadow-sm"
+                className="mt-1 block w-full border p-2 rounded-md"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
-              ></textarea>
+              />
             </div>
             <div className="flex gap-2">
               <Button type="submit">
@@ -144,7 +142,7 @@ export default function AdminPanel() {
                 <CardTitle>{article.title}</CardTitle>
               </CardHeader>
               <CardContent className="flex justify-between items-start">
-                <p className="text-sm text-gray-600 max-w-[70%] line-clamp-3">{article.content}</p>
+                <p className="text-sm text-gray-600 max-w-[70%]">{article.content}</p>
                 <div className="flex gap-2">
                   <Button variant="secondary" onClick={() => handleEdit(article)}>Edit</Button>
                   <Button variant="destructive" onClick={() => handleDelete(article.id)}>Delete</Button>
